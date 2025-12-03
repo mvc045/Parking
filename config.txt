@@ -1,13 +1,12 @@
 # Настройки подключения
 
-serial_port=/dev/ttys322
+serial_port=/dev/ttys425
 
+# ID нашего шлагбаума (slave ID)
 barrier_id=1
 
 # Время открытия шлагбаума (сек.)
 timeout_open_gate=5
-
-
 
 
 

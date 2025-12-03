@@ -31,7 +31,9 @@ public:
     void openGate() {
         cout << "[Controller] Отправили команду на открытие\n";
         
-        ModbusFrame frame = { deviceId, 0x05, 0x0001, 0xFF00 };
+        // 0x05 - метод записи в coil
+        // 0xFF00 - открыть, 0x0000 - закрыть
+        ModbusFrame frame = { deviceId, 0x05, 0x0000, 0xFF00 };
         auto rawData = frame.serialize();
         
         port.sendBytes(rawData);
@@ -65,6 +67,10 @@ public:
         cout << "[Controller] Отправили команду на закрытие\n";
         string command(1, static_cast<char>(GateCommand::Close));
         port.sendData(command);
+        
+        ModbusFrame frame = { deviceId, 0x05, 0x0000, 0x0000 };
+        auto rawData = frame.serialize();
+        port.sendBytes(rawData);
     }
 };
 
