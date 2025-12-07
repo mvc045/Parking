@@ -27,6 +27,8 @@ public:
     bool sendData(const std::string& data);
     bool sendBytes(const std::vector<uint8_t>& data);
     int readBytes(std::vector<uint8_t>& buffer, int expectedLength, int timeout);
+    // Очистка канала
+    void flush();
 };
 
 #endif /* SerialPort_hpp */

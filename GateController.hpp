@@ -20,7 +20,13 @@ private:
     uint8_t deviceId;
 public:
     bool init(const string& devicePath, const uint8_t& id);
+    
     void openGate();
+    void waitForOpen();
+    bool isGateOpen();
+    
     void closeGate();
+    void waitForClose();
+    bool isGateClose();
 };
 #endif /* GateController_hpp */

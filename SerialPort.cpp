@@ -160,3 +160,9 @@ int SerialPort::readBytes(vector<uint8_t>& buffer, int expectedLength, int timeo
     return totalBytesRead;
     
 }
+
+void SerialPort::flush() {
+    if (fileDescriptor != -1) {
+        tcflush(fileDescriptor, TCIOFLUSH);
+    }
+}

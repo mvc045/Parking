@@ -1,6 +1,7 @@
 import logging
 import threading
 import tkinter as tk
+from tkinter import ttk
 
 from pymodbus.server import StartSerialServer
 from pymodbus.datastore import ModbusSequentialDataBlock
@@ -14,12 +15,15 @@ log.setLevel(logging.INFO)
  # Эмулятор шлагбаума через Modbus RTU
  # Нужные библиотеки: pip install pymodbus==3.6.1 pyserial
 
+serial_port = '/dev/ttys002'  # Укажите COM-порт
+
 class BarrierEmulator:
     def __init__(self, root, context):
         self.root = root
         self.context = context
 
         self.slave_id = 0x00
+        self.speed = 1  # скорость шлагбаума
 
         # Создаем UI
         self.root.title("Эмулятор шлагбаума (modbus slave)")
@@ -31,16 +35,25 @@ class BarrierEmulator:
         self.lbl_status = tk.Label(frame_status, text="Закрыт")
         self.lbl_status.pack(pady=10)
 
+        # Прогресс бар
+        self.progress = ttk.Progressbar(frame_status, orient="horizontal", length=300, mode="determinate")
+        self.progress.pack(pady=10)
+        self.progress['maximum'] = 100
+        self.progress['value'] = 0
+
+        # Данные Modbus
         frame_data = tk.LabelFrame(self.root, text="Данные Modbus")
         frame_data.pack(fill="x", padx=10, pady=10)
 
-        # Coil
-        self.lbl_coil = tk.Label(frame_data, text="Coil[0]: 0")
+        self.lbl_coil = tk.Label(frame_data, text="Coil: 0")
         self.lbl_coil.pack(anchor="w", pady=5)
 
-        # Holding Register (Например, настройки скорости или таймаут)
-        self.lbl_hr = tk.Label(frame_data, text="Holding Register[0]: 0")
-        self.lbl_hr.pack(anchor="w", pady=5)
+        self.lbl_di1 = tk.Label(frame_data, text="DI[1] (Is Closed): 1")
+        self.lbl_di1.pack(anchor="w", pady=5)
+
+        self.lbl_di2 = tk.Label(frame_data, text="DI[2] (Is Open): 0")
+        self.lbl_di2.pack(anchor="w", pady=5)
+
 
         # 3. Управление датчиками (Simulate Inputs)
         frame_controls = tk.LabelFrame(self.root, text="Управление датчиками")
@@ -74,26 +87,42 @@ class BarrierEmulator:
         coils = store.getValues(1, 0, count=1)
         isOpenCommand = coils[0] if coils else False
 
-        # Читаем Holding Register[0]
-        hrs = store.getValues(3, 0, count=1)
-        hr_val = hrs[0] if hrs else 0
-
         if isOpenCommand:
+            # Открываем шлагбаум
+            if self.progress['value'] < 100:
+                self.progress['value'] += self.speed
+        else:
+            # Закрываем шлагбаум
+            if self.progress['value'] > 0:
+                self.progress['value'] -= self.speed
+        
+        # Определяем состояние концовиков
+        is_fully_closed = (self.progress['value'] == 0)
+        is_fully_open = (self.progress['value'] == 100)
+        # Обновляем дискретные входы
+        store.setValues(2, 1, [1 if is_fully_closed else 0])  # DI[1] - Is Closed
+        store.setValues(2, 2, [1 if is_fully_open else 0])    # DI[2] - Is Open
+
+        if is_fully_closed:
+            self.lbl_status.config(text="Закрыт", fg="red")
+        elif is_fully_open:
             self.lbl_status.config(text="Открыт", fg="green")
         else:
-            self.lbl_status.config(text="Закрыт", fg="red")
+            value = self.progress['value']
+            self.lbl_status.config(text=f"В движении {value} %", fg="orange")
         
         self.lbl_coil.config(text=f"Coil[0]: { 1 if isOpenCommand else 0 }")
-        self.lbl_hr.config(text=f"Holding Register[0]: {hr_val}")
+        self.lbl_di1.config(text=f"DI[1] (Is Closed): {1 if is_fully_closed else 0}")
+        self.lbl_di2.config(text=f"DI[2] (Is Open): {1 if is_fully_open else 0}")
         
-        self.root.after(200, self.updateUI)
+        self.root.after(50, self.updateUI)
 
 
 def run_modbus_server(context):
     StartSerialServer(
         context=context,  
         identity=None,
-        port='/dev/ttys426',
+        port=serial_port,
         framer=ModbusRtuFramer,
         baudrate=9600,
         parity='N',
@@ -113,7 +142,6 @@ if __name__ == "__main__":
     )
     # context, это память нашего  шалгбаума
     context = ModbusServerContext(slaves=store, single=True)
-    
     
     server_thread = threading.Thread(target=run_modbus_server, args=(context,), daemon=True)
     server_thread.start()

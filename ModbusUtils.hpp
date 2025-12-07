@@ -39,12 +39,14 @@ public:
 
 enum class Command: uint8_t {
     WRITE_SINGL_COIL = 0x05,
-    READ_COILS = 0x01
+    READ_COILS = 0x01,
+    READ_DSSCRETE_INPUTS = 0x02
 };
 
 enum class Action: uint16_t {
     OPEN = 0xFF00,
-    CLOSE = 0x0000
+    CLOSE = 0x0000,
+    SINGLE = 0x0008
 };
 
 struct ModbusFrame {
