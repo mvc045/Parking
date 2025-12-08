@@ -15,7 +15,7 @@ log.setLevel(logging.INFO)
  # Эмулятор шлагбаума через Modbus RTU
  # Нужные библиотеки: pip install pymodbus==3.6.1 pyserial
 
-serial_port = '/dev/ttys002'  # Укажите COM-порт
+serial_port = '/dev/ttys034'  # Укажите COM-порт
 
 class BarrierEmulator:
     def __init__(self, root, context):
@@ -140,8 +140,16 @@ if __name__ == "__main__":
         hr=ModbusSequentialDataBlock(0, [0]*100),
         ir=ModbusSequentialDataBlock(0, [0]*100)
     )
-    # context, это память нашего  шалгбаума
-    context = ModbusServerContext(slaves=store, single=True)
+
+    # адрес нашего устройства
+    # { ID : Память }
+    slaves = {
+        0x00: store
+    }
+    
+    # slaves - список устройств
+    # single, если установить True, то будет работать с любым ID (в slaves передаем store)
+    context = ModbusServerContext(slaves=slaves, single=False)
     
     server_thread = threading.Thread(target=run_modbus_server, args=(context,), daemon=True)
     server_thread.start()

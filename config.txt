@@ -4,7 +4,7 @@
 serial_port=/dev/ttys002
 
 # ID нашего шлагбаума (slave ID)
-barrier_id=1
+barrier_id=0
 
 # Время открытия шлагбаума (сек.)
 timeout_open_gate=5

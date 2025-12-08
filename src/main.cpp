@@ -54,26 +54,43 @@ int main(int argc, const char * argv[]) {
         response["device_id"] = deviceId;
         response["status"] = isOpen ? "open" : "closed";
         response["timestamp"] = time(nullptr);
-        
         res.set_content(response.dump(), "application/json");
     });
     
     svr.Post("/open", [&](const httplib::Request& req, httplib::Response& res) {
-        gateController.openGate();
-        
         json response;
-        response["ok"] = true;
-        response["timestamp"] = time(nullptr);
-        res.set_content(response.dump(), "application/json");
+        
+        try {
+            gateController.openGate();
+            response["ok"] = true;
+            response["timestamp"] = time(nullptr);
+            res.set_content(response.dump(), "application/json");
+        } catch (const exception& e) {
+            // Отлавливаем ошибки
+            response["ok"] = false;
+            response["message"] = e.what();
+            
+            res.status = 500;
+            res.set_content(response.dump(), "application/json");
+        }
     });
     
     svr.Post("/close", [&](const httplib::Request& req, httplib::Response& res) {
-        gateController.closeGate();
-        
         json response;
-        response["ok"] = true;
-        response["timestamp"] = time(nullptr);
-        res.set_content(response.dump(), "application/json");
+        
+        try {
+            gateController.closeGate();
+            
+            response["ok"] = true;
+            response["timestamp"] = time(nullptr);
+            res.set_content(response.dump(), "application/json");
+        } catch (const exception& e) {
+            response["ok"] = false;
+            response["message"] = e.what();
+            
+            res.status = 500;
+            res.set_content(response.dump(), "application/json");
+        }
     });
     
     int portHTTP = config.getInt("port_http");

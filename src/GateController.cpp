@@ -10,6 +10,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <thread>
+#include <stdexcept>
 
 using namespace std;
 
@@ -30,6 +31,8 @@ void GateController::openGate() {
     if (bytesRead != 8) {
         cerr << "[Controller] Ошибка, с ответом от шлагбаума что то не так\n";
         cerr << "[Controller] " << bytesRead << "\n";
+        
+        throw runtime_error("Ошибка, с ответом от шлагбаума что то не так");
         return;
     }
 
@@ -44,6 +47,7 @@ void GateController::openGate() {
         waitForOpen();
     } else {
         cerr << "[Controller] CRC не совпали\n";
+        throw runtime_error("CRC не совпали");
     }
 }
 
