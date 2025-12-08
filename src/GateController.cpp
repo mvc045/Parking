@@ -167,6 +167,6 @@ bool GateController::isGateClose() {
     
     uint8_t statusByte = response[3];
     bool isClose = (statusByte & 0x01) != 0;
-    cout << "[Polling] statusByte - " << (int)response[3] << "\n";
+    // cout << "[Polling] statusByte - " << (int)response[3] << "\n";
     return isClose;
 }

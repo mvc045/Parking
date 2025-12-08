@@ -1,0 +1,1 @@
+/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/Parking.dir/src/ConfigLoader.cpp.o CMakeFiles/Parking.dir/src/GateController.cpp.o CMakeFiles/Parking.dir/src/ModbusUtils.cpp.o CMakeFiles/Parking.dir/src/SerialPort.cpp.o CMakeFiles/Parking.dir/src/main.cpp.o -o Parking
