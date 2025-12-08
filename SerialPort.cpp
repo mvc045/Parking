@@ -99,6 +99,10 @@ bool SerialPort::sendBytes(const vector<uint8_t>& data) {
     if (!isConnect) {
         return false;
     }
+    
+    // блокируем поток
+    lock_guard<mutex> lock(portMutex);
+    
     // кол-во записаных байт
     ssize_t bytesWritte = write(fileDescriptor, data.data(), data.size());
     
@@ -115,6 +119,9 @@ int SerialPort::readBytes(vector<uint8_t>& buffer, int expectedLength, int timeo
     if (!isConnect) {
         return -1;
     }
+    // блокируем поток
+    lock_guard<mutex> lock(portMutex);
+    
     buffer.clear();
     buffer.reserve(expectedLength);
     
@@ -163,6 +170,9 @@ int SerialPort::readBytes(vector<uint8_t>& buffer, int expectedLength, int timeo
 
 void SerialPort::flush() {
     if (fileDescriptor != -1) {
+        // блокируем поток
+        lock_guard<mutex> lock(portMutex);
+        
         tcflush(fileDescriptor, TCIOFLUSH);
     }
 }

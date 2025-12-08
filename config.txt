@@ -1,13 +1,13 @@
 # Настройки подключения
 
 # Контроллер (master)
-serial_port=/dev/ttys001
+serial_port=/dev/ttys002
 
 # ID нашего шлагбаума (slave ID)
 barrier_id=1
 
-# Кол-во парковочных мест
-parking_place=2
-
 # Время открытия шлагбаума (сек.)
 timeout_open_gate=5
+
+# Порт для HTTP сервера
+port_http=8081

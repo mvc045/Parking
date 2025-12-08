@@ -11,13 +11,16 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <mutex>
+
+using namespace std;
 
 // Драйвер для шлагбаума
 class SerialPort {
 private:
+    mutex portMutex;
     int fileDescriptor;
     bool isConnect;
-
 public:
     SerialPort();
     ~SerialPort();

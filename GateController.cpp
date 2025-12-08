@@ -15,6 +15,7 @@ using namespace std;
 
 bool GateController::init(const string& devicePath, const uint8_t& id) {
     deviceId = id;
+    port.flush();
     return port.connect(devicePath);
 }
 
