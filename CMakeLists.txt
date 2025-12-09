@@ -9,15 +9,30 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Где искать заголовочные файлы (.hpp)
 include_directories(include)
 
+# (Это нужно, чтобы они появились в дереве Xcode)
+file(GLOB HEADERS "include/*.hpp" "include/*.h")
+
+file(GLOB CONFIGS "config.txt")
+
+source_group("Source Files" FILES ${SOURCES})
+source_group("Header Files" FILES ${HEADERS})
+source_group("Resources" FILES ${CONFIGS})
+
 # Собираем список всех .cpp файлов из папки src
 file(GLOB SOURCES "src/*.cpp")
 
 # Создаем исполняемый файл (Executable)
-add_executable(Parking ${SOURCES})
+add_executable(Parking ${SOURCES} ${HEADERS} ${CONFIGS})
 
 find_package(Threads REQUIRED)
 target_link_libraries(Parking Threads::Threads)
 
+# Ищем пакет SQLite
+# find_package(SQLite3 REQUIRED)
+target_link_libraries(Parking Threads::Threads sqlite3)
+
+# ОТКЛЮЧИТЬ DTRACE
+set_target_properties(Parking PROPERTIES XCODE_ATTRIBUTE_ENABLE_DTRACE "NO")
 
 # В папке build
 # 1. Запускаем сборку cmake ..

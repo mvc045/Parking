@@ -9,8 +9,10 @@
 #include "GateController.hpp"
 #include "ModbusUtils.hpp"
 #include "ConfigLoader.hpp"
+#include "Database.hpp"
 #include <iostream>
 #include <unistd.h>
+
 
 // HTTP сервер
 #include "httplib.h"
@@ -44,8 +46,16 @@ int main(int argc, const char * argv[]) {
     
     GateController gateController(port, static_cast<uint8_t>(deviceId));
     
+    // Создаем файл с бд
+    Database db("parking_01.db");
+    
     // Поднимаем HTTP сервер
     httplib::Server svr;
+    
+    svr.Get("/history", [&](const httplib::Request& req, httplib::Response& res) {
+        json history = db.getHistory();
+        res.set_content(history.dump(4), "application/json");
+    });
     
     svr.Get("/status", [&](const httplib::Request& req, httplib::Response& res) {
         bool isOpen = gateController.isGateOpen();
@@ -64,11 +74,16 @@ int main(int argc, const char * argv[]) {
             gateController.openGate();
             response["ok"] = true;
             response["timestamp"] = time(nullptr);
+            
+            db.logEvent("INFO", "Шлагбаум открыт", deviceId);
+            
             res.set_content(response.dump(), "application/json");
         } catch (const exception& e) {
             // Отлавливаем ошибки
             response["ok"] = false;
             response["message"] = e.what();
+            
+            db.logEvent("ERROR", string("Ошибка: ") + e.what(), deviceId);
             
             res.status = 500;
             res.set_content(response.dump(), "application/json");
@@ -83,10 +98,15 @@ int main(int argc, const char * argv[]) {
             
             response["ok"] = true;
             response["timestamp"] = time(nullptr);
+            
+            db.logEvent("INFO", "Шлагбаум закрыт", deviceId);
+            
             res.set_content(response.dump(), "application/json");
         } catch (const exception& e) {
             response["ok"] = false;
             response["message"] = e.what();
+            
+            db.logEvent("ERROR", string("Ошибка: ") + e.what(), deviceId);
             
             res.status = 500;
             res.set_content(response.dump(), "application/json");
