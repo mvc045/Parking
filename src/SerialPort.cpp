@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <termios.h> // POSIX terminal control
 #include <unistd.h>
+#include <thread>
 
 using namespace std;
 
@@ -149,9 +150,25 @@ int SerialPort::readBytes(vector<uint8_t>& buffer, int expectedLength, int timeo
 }
 
 void SerialPort::flush() {
-    if (fileDescriptor != -1) {
-        // блокируем поток
-        lock_guard<mutex> lock(portMutex);
-        tcflush(fileDescriptor, TCIOFLUSH);
+    lock_guard<mutex> lock(portMutex);
+    if (fileDescriptor == -1) return;
+    
+    int flags = fcntl(fileDescriptor, F_GETFL, 0);
+    fcntl(fileDescriptor, F_SETFL, flags | O_NONBLOCK);
+    
+    uint8_t buffer[1024];
+    int totalBytes = 0;
+    int bytesRead = 0;
+    
+    do {
+        bytesRead = read(fileDescriptor, buffer, sizeof(buffer));
+        if (bytesRead > 0) totalBytes += bytesRead;
+        if (bytesRead > 0) this_thread::sleep_for(chrono::milliseconds(10));
+    } while (bytesRead > 0);
+    
+    fcntl(fileDescriptor, F_SETFL, flags);
+    
+    if (totalBytes > 0) {
+        cout << "[SerialPort] Очистка мусора " << totalBytes << " байт мусора.\n";
     }
 }

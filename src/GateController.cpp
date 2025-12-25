@@ -16,6 +16,7 @@
 using namespace std;
 
 void GateController::openGate(bool autoClose) {
+    // port.flush();
     cout << "[Controller] Отправили команду на открытие\n";
     
     ModbusFrame frame = { deviceId, Command::WRITE_SINGL_COIL, 0x0000, Action::OPEN };
@@ -129,6 +130,7 @@ void GateController::waitForOpen() {
 }
 
 void GateController::closeGate() {
+    // port.flush();
     cout << "[Controller] Отправили команду на закрытие\n";
 
     ModbusFrame frame = { deviceId, Command::WRITE_SINGL_COIL, 0x0000, Action::CLOSE };

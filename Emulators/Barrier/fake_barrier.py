@@ -15,7 +15,7 @@ log.setLevel(logging.INFO)
  # Эмулятор шлагбаума через Modbus RTU
  # Нужные библиотеки: pip install pymodbus==3.6.1 pyserial
 
-serial_port = '/dev/ttys004'  # Укажите COM-порт
+serial_port = '/dev/ttys006'  # Укажите COM-порт
 
 class BarrierEmulator:
     def __init__(self, root, context):
@@ -99,6 +99,11 @@ class BarrierEmulator:
         # Определяем состояние концовиков
         is_fully_closed = (self.progress['value'] == 0)
         is_fully_open = (self.progress['value'] == 100)
+
+        # Отправляем положение стрелы
+        current_position = int(self.progress['value'])
+        store.setValues(4, 0, [current_position]) 
+
         # Обновляем дискретные входы
         store.setValues(2, 1, [1 if is_fully_closed else 0])  # DI[1] - Is Closed
         store.setValues(2, 2, [1 if is_fully_open else 0])    # DI[2] - Is Open
