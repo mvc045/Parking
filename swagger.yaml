@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: Parking System API
+  description: |
+    API для управления шлагбаумом, мониторинга его состояния.
+    
+    ### WebSockets
+    Для получения обновлений в реальном времени используйте WebSocket соединение.
+    **Примеры событий:**
+    - `GATE_STATUS`: `{"data":{"state":"Closed"},"event":"GATE_STATUS","timestamp":1766690659}`
+    - `GATE_UPDATE`: `{"data":{"position":0},"event":"GATE_UPDATE","timestamp":1766690660}`
+  version: 0.0.1
+
+paths:
+  /open:
+    post:
+      summary: Открыть шлагбаум
+      tags:
+        - Control
+      responses:
+        '200':
+          description: Команда принята
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResponse'
+
+  /close:
+    post:
+      summary: Закрыть шлагбаум
+      tags:
+        - Control
+      responses:
+        '200':
+          description: Команда принята
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResponse'
+
+  /status:
+    get:
+      summary: Получить текущее состояние устройства
+      tags:
+        - Monitoring
+      responses:
+        '200':
+          description: Текущий статус
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceStatus'
+
+  /history:
+    get:
+      summary: Получить историю событий
+      tags:
+        - Monitoring
+      responses:
+        '200':
+          description: Список последних событий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HistoryItem'
+
+  /rfid/user:
+    post:
+      summary: Привязать RFID карту к пользователю
+      tags:
+        - RFID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RfidUserRequest'
+      responses:
+        '200':
+          description: Пользователь успешно создан/обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RfidUserResponse'
+
+components:
+  schemas:
+    ActionResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        status:
+          type: string
+          example: "accepted"
+
+    DeviceStatus:
+      type: object
+      properties:
+        device_id:
+          type: integer
+          example: 0
+        position:
+          type: integer
+          example: 11
+        status:
+          type: string
+          enum: [open, closed, opening, closing]
+          example: "closed"
+        timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp
+          example: 1766689826
+
+    HistoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 58
+        device_id:
+          type: integer
+          example: 0
+        message:
+          type: string
+          example: "Шлагбаум закрыт"
+        type:
+          type: string
+          example: "Controller"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-12-26 00:24:19"
+
+    RfidUserRequest:
+      type: object
+      required:
+        - username
+        - card_code
+      properties:
+        username:
+          type: string
+          example: "root7"
+        card_code:
+          type: string
+          example: "CARD_1115"
+
+    RfidUserResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        cardCode:
+          type: string
+          example: "CARD_1115"
