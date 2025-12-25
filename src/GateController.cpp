@@ -102,7 +102,6 @@ bool GateController::isGateOpen() {
     
     uint8_t statusByte = response[3];
     bool isOpen = (statusByte & 0x01) != 0;
-    // cout << "[Polling] statusByte - " << (int)response[3] << "\n";
     return isOpen;
 }
 
@@ -187,4 +186,29 @@ bool GateController::isGateClose() {
     bool isClose = (statusByte & 0x01) != 0;
     // cout << "[Polling] statusByte - " << (int)response[3] << "\n";
     return isClose;
+}
+
+int GateController::getGatePosition() {
+    port.flush();
+    
+    ModbusFrame frame = { deviceId, Command::READ_INPUT_REGISTERS, 0x0000, Action::ONE_REGISTER };
+    port.sendBytes(frame.serialize());
+    
+    // Ответ: ID(1) + FC(1) + BytesCount(1) + Data(2) + CRC(2) = 7 байт
+    vector<uint8_t> response;
+    int bytesRead = port.readBytes(response, 7, 1);
+    
+    if (bytesRead != 7) return -1;
+    if (response[1] != 0x04) return -1;
+    
+    // Парсим данные
+    // response[0] = ID
+    // response[1] = 0x04
+    // response[2] = 0x02 (кол-во байт данных)
+    // response[3] = Старший байт числа (Hi)
+    // response[4] = Младший байт числа (Lo)
+    
+    int position = (response[3] << 8) | response[4];
+    return  position;
+    
 }

@@ -34,6 +34,14 @@ void NetworkServer::start(int port) {
             response["status"] = isOpen ? "open" : "closed";
             response["timestamp"] = time(nullptr);
             
+            int percent = this->controller.getGatePosition();
+            
+            if (percent >= 0) {
+                response["position"] = percent;
+            } else {
+                response["position"] = nullptr;
+            }
+                        
             res->writeHeader("Content-Type", "application/json");
             res->end(response.dump());
         });
@@ -55,25 +63,19 @@ void NetworkServer::start(int port) {
                 return;
             }
             
-            auto resPromise = make_shared<promise<json>>();
-            auto future = resPromise->get_future();
-            
-            thread([this, resPromise]() {
-                json localResponse;
+            thread([this]() {
                 try {
                     this->controller.openGate();
-                    localResponse["ok"] = true;
-                    localResponse["timestamp"] = time(nullptr);
-                    
                 } catch (const exception& e) {
                     // Отлавливаем ошибки
-                    localResponse["ok"] = false;
-                    localResponse["message"] = e.what();
+                    cerr << "Ошибка: " << e.what();
                 }
-                resPromise->set_value(localResponse);
             }).detach();
             
-            json response = future.get();
+            json response;
+            response["ok"] = true;
+            response["status"] = "accepted";
+            
             res->writeHeader("Content-Type", "application/json")->end(response.dump());
         });
         
@@ -87,25 +89,19 @@ void NetworkServer::start(int port) {
                 return;
             }
             
-            auto resPromise = make_shared<promise<json>>();
-            auto future = resPromise->get_future();
-            
-            thread([this, resPromise]() {
-                json localResponse;
+            thread([this]() {
                 try {
                     this->controller.closeGate();
-                    localResponse["ok"] = true;
-                    localResponse["timestamp"] = time(nullptr);
-                    
                 } catch (const exception& e) {
                     // Отлавливаем ошибки
-                    localResponse["ok"] = false;
-                    localResponse["message"] = e.what();
+                    cerr << "Ошибка: " << e.what();
                 }
-                resPromise->set_value(localResponse);
             }).detach();
             
-            json response = future.get();
+            json response;
+            response["ok"] = true;
+            response["status"] = "accepted";
+            
             res->writeHeader("Content-Type", "application/json")->end(response.dump());
         });
         

@@ -38,8 +38,6 @@ void showMenu() {
     cout << "\n--- RFID Эмулятор ---\n";
     cout << "[1] Карта жильца\n";
     cout << "[2] Неизвестная карта\n";
-    cout << "[3] Ввести RFID код\n";
-    cout << "[3] Стресс-тест\n";
     cout << "[q] Выход\n";
 }
 
@@ -50,7 +48,7 @@ int main(int argc, const char * argv[]) {
     if (argc > 1) {
         portName = argv[1];
     } else {
-        portName = "/dev/ttys027";
+        portName = "/dev/ttys039";
 //        cout << "Введите порт в который будем писать: \n";
 //        cin >> portName;
     }

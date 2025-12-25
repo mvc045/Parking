@@ -38,9 +38,9 @@ public:
     void openGate(bool autoClose = false);
     void waitForOpen();
     bool isGateOpen();
-    
     void closeGate();
     void waitForClose();
     bool isGateClose();
+    int  getGatePosition();
 };
 #endif /* GateController_hpp */
