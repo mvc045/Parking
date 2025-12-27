@@ -17,11 +17,9 @@ class SocketService {
     
     private var socket: WebSocket?
     weak var delegate: SocketServiceDelegate?
-    
-    private var wsHost: String = "ws://localhost:8081/ws"
-    
-    func connect() {
-        var request = URLRequest(url: URL(string: wsHost)!)
+        
+    func connect(host: String) {
+        var request = URLRequest(url: URL(string: host)!)
         request.timeoutInterval = 5
         socket = WebSocket(request: request)
         socket?.delegate = self

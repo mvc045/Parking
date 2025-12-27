@@ -10,9 +10,12 @@ import Foundation
 class BarrierViewModel {
     
     private let socketService: SocketService
+    private let updLisener: UDPListener
+    
     private(set) var messages: [String] = []
     
     var onMessagesUpdated: (() -> Void)?
+    var onMessagesUPDUpdated: ((MessageUPDBroadcast) -> Void)?
     var onStatusChanged: ((Bool) -> Void)?
     
     private(set) var isOpen: Bool = false
@@ -20,11 +23,14 @@ class BarrierViewModel {
     
     init() {
         socketService = SocketService()
+        updLisener = UDPListener()
         socketService.delegate = self
+        updLisener.delegate = self
+        updLisener.startListenr(port: 30001)
     }
     
-    func connect() {
-        socketService.connect()
+    func connect(host: String) {
+        socketService.connect(host: host)
     }
     
     func sendMessage(text: String) {
@@ -56,6 +62,20 @@ extension BarrierViewModel: SocketServiceDelegate {
     
     func didChangeStatus(isConnected: Bool) {
         onStatusChanged?(isConnected)
+    }
+    
+}
+
+extension BarrierViewModel: UDPListenerDelegate {
+    
+    func didReceive(message: MessageUPDBroadcast) {
+        if let webSocketHost = message.wsHost {
+            updLisener.stop()
+            connect(host: webSocketHost)
+            DispatchQueue.main.async { [weak self] in
+                self?.onMessagesUPDUpdated?(message)
+            }
+        }
     }
     
 }

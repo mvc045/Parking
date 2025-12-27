@@ -32,7 +32,7 @@ struct Message: Codable {
 
 }
 
-struct Data : Codable {
+struct Data: Codable {
     
     let state : String?
     let position: Int?
@@ -46,6 +46,27 @@ struct Data : Codable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         state = try values.decodeIfPresent(String.self, forKey: .state)
         position = try values.decodeIfPresent(Int.self, forKey: .position)
+    }
+    
+}
+
+struct MessageUPDBroadcast: Codable {
+    
+    let deviceId : String?
+    let serviceName : String?
+    let wsHost : String?
+
+    enum CodingKeys: String, CodingKey {
+        case deviceId = "device_id"
+        case serviceName = "service_name"
+        case wsHost = "ws_host"
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        deviceId = try values.decodeIfPresent(String.self, forKey: .deviceId)
+        serviceName = try values.decodeIfPresent(String.self, forKey: .serviceName)
+        wsHost = try values.decodeIfPresent(String.self, forKey: .wsHost)
     }
     
 }

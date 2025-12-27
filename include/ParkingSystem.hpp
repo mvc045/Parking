@@ -15,6 +15,7 @@
 #include "GateController.hpp"
 #include "RfidReader.hpp"
 #include "NetworkServer.hpp"
+#include "ServiceBeacon.hpp"
 
 using namespace std;
 
@@ -29,6 +30,8 @@ private:
     
     void setup();
     void processRFIDCard(const string& cardCode);
+    unique_ptr<ServiceBeacon> beacon;
+    
 public:
     ParkingSystem();
     

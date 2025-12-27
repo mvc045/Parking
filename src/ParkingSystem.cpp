@@ -22,6 +22,7 @@ bool ParkingSystem::init(const string& configPath) {
     string rfidPortName = config.getString("rfid_port");
     int barrierId = config.getInt("barrier_id");
     string apiKey = config.getString("api_key");
+    int httpPort = config.getInt("port_http");
     
     // 2. Оборудования
     
@@ -36,6 +37,9 @@ bool ParkingSystem::init(const string& configPath) {
     if (!rfidReader.connect(rfidPortName)) {
         cerr << "Ошибка: Подключения к RFID - " << rfidPortName;
     }
+    
+    // Beacon (маячок шлагбаума)
+    beacon = make_unique<ServiceBeacon>(to_string(barrierId), httpPort, 30001);
     
     // 3.
     setup();
@@ -80,11 +84,17 @@ void ParkingSystem::processRFIDCard(const string& cardCode) {
 
 void ParkingSystem::run() {
     rfidReader.start();
+    
     int httpPort = config.getInt("port_http");
     networkServer.start(httpPort);
     
-    int lastBarrierState = -1;
+    // Запуская beacon маячок
+    if (beacon) {
+        beacon->start();
+    }
     
+    // Проверяем изменилось ли состояние шлагбаума, если да пушим сообщения о позиции стрелы в websocket
+    int lastBarrierState = -1;
     while (true) {
         try {
             int currentBarrierState = controller.getGatePosition();
